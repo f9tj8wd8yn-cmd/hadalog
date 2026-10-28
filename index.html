@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#FAF7F2">
+<meta name="description" content="撮って1分。今日の肌ケアと食事が決まる、HadaLog（肌ログ）。">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="HadaLog">
+<meta property="og:title" content="HadaLog — 今日の肌ケアと食事が決まる">
+<meta property="og:description" content="撮って1分。今日の肌ケアと食事が決まる。">
+<meta property="og:type" content="website">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>HadaLog — 撮って1分。今日の肌ケアと食事が決まる。</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  [hidden] { display: none !important; }
+  :root {
+    --bg: #FAF7F2; --card: #FFFFFF; --ink: #2A1D17; --sub: #8B7D72; --line: #EEE5D8;
+    --accent: #B8674A; --accent-2: #D9A26B; --accent-soft: #FBEFE8;
+    --moss: #5D6E4B; --moss-soft: #EEF3E8; --gold: #B8935A; --danger: #B5523A;
+    --r-lg: 22px; --r-md: 16px; --r-sm: 12px;
+    --shadow: 0 1px 2px rgba(42,29,23,.04), 0 8px 24px rgba(42,29,23,.06);
+    --shadow-btn: 0 10px 24px rgba(184,103,74,.28);
+  }
+  html { overflow-x: hidden; }
+  body { font-family: 'Noto Sans JP', system-ui, sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  button, input { font-family: inherit; }
+  button { cursor: pointer; border: none; background: none; color: inherit; }
+  button:disabled { opacity: .5; cursor: default; }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .serif { font-family: 'Noto Serif JP', serif; }
+  .display { font-family: 'DM Serif Display', serif; }
+
+  #app { max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative; background: var(--bg); }
+  .screen { display: none; }
+  .screen.active { display: block; animation: rise .45s cubic-bezier(.2,.8,.2,1); }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+  /* Splash */
+  #splash { position: fixed; inset: 0; z-index: 300; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(120% 80% at 50% 0%, #FBEFE8 0%, var(--bg) 60%); transition: opacity .6s; }
+  #splash.hidden { opacity: 0; pointer-events: none; }
+  .splash-logo { font-family: 'DM Serif Display', serif; font-size: 3.2rem; color: var(--accent); animation: pop .9s cubic-bezier(.2,.8,.2,1); }
+  .splash-logo em { font-style: italic; color: var(--gold); }
+  .splash-tag { font-size: .66rem; letter-spacing: .3em; color: var(--sub); margin-top: 10px; text-transform: uppercase; }
+  .splash-copy { margin-top: 36px; font-size: .9rem; color: var(--ink); letter-spacing: .04em; animation: rise 1s .4s both; }
+  @keyframes pop { from { opacity: 0; transform: scale(.92); } to { opacity: 1; transform: none; } }
+
+  /* Buttons */
+  .btn { display: block; width: 100%; padding: 16px; border-radius: 16px; font-weight: 700; font-size: .95rem; letter-spacing: .03em; transition: transform .15s, box-shadow .2s; }
+  .btn:active { transform: scale(.98); }
+  .btn-primary { background: linear-gradient(135deg, var(--accent), #A25A40); color: #fff; box-shadow: var(--shadow-btn); }
+  .btn-soft { background: var(--accent-soft); color: var(--accent); }
+  .btn-ghost { border: 1.5px solid var(--line); background: var(--card); color: var(--ink); }
+  .btn-dark { background: var(--ink); color: #fff; }
+  .link { display: inline-block; font-size: .82rem; color: var(--accent); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; margin-top: 12px; }
+
+  /* Onboarding */
+  #onboarding.active { min-height: 100vh; display: flex; flex-direction: column; padding: 28px 24px 24px; background: radial-gradient(120% 70% at 50% 0%, #FBEFE8 0%, var(--bg) 62%); position: relative; }
+  .ob-top { display: flex; justify-content: space-between; align-items: center; min-height: 36px; }
+  .ob-brand { font-family: 'DM Serif Display', serif; color: var(--accent); font-size: 1.2rem; }
+  .ob-skip { font-size: .82rem; color: var(--sub); padding: 8px 4px; }
+  .ob-body { flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; touch-action: pan-y; }
+  .ob-slide { display: none; }
+  .ob-slide.active { display: block; animation: rise .5s cubic-bezier(.2,.8,.2,1); }
+  .ob-illust { width: 148px; height: 148px; border-radius: 48px; margin: 0 auto 34px; display: flex; align-items: center; justify-content: center; font-size: 3.6rem; box-shadow: var(--shadow); transform: rotate(-4deg); }
+  .i1 { background: linear-gradient(140deg, #FFFFFF, #F6D9C8); }
+  .i2 { background: linear-gradient(140deg, #FFFFFF, #D7E6C8); }
+  .i3 { background: linear-gradient(140deg, #FFFFFF, #EED9A6); }
+  .ob-title { font-family: 'Noto Serif JP', serif; font-size: 1.55rem; font-weight: 600; line-height: 1.4; margin-bottom: 14px; }
+  .ob-title em { font-style: normal; color: var(--accent); }
+  .ob-sub { font-size: .9rem; color: var(--sub); line-height: 1.9; max-width: 300px; margin: 0 auto; }
+  .ob-foot { display: flex; flex-direction: column; gap: 22px; }
+  .ob-dots { display: flex; justify-content: center; gap: 8px; }
+  .ob-dot { width: 8px; height: 8px; border-radius: 8px; background: #E3D6C6; transition: all .35s; }
+  .ob-dot.active { width: 26px; background: var(--accent); }
+
+  /* Register */
+  #register.active { min-height: 100vh; padding: 70px 24px 40px; background: radial-gradient(120% 70% at 50% 0%, #FBEFE8 0%, var(--bg) 62%); }
+  .reg-logo { font-family: 'DM Serif Display', serif; font-size: 2.6rem; color: var(--accent); text-align: center; }
+  .reg-logo em { font-style: italic; color: var(--gold); }
+  .reg-tag { text-align: center; color: var(--sub); font-size: .85rem; margin: 10px 0 36px; }
+  .card { background: var(--card); border-radius: var(--r-lg); padding: 24px; box-shadow: var(--shadow); }
+  .field label { display: block; font-size: .78rem; color: var(--sub); margin-bottom: 8px; font-weight: 500; }
+  .field input { width: 100%; padding: 15px 16px; border: 1.5px solid var(--line); border-radius: var(--r-md); background: var(--bg); font-size: 1rem; color: var(--ink); }
+  .field input:focus { outline: none; border-color: var(--accent); background: #fff; }
+  .form-err { font-size: .78rem; color: var(--danger); margin-top: 8px; min-height: 1.2em; }
+  .note { font-size: .74rem; color: var(--sub); text-align: center; margin-top: 16px; line-height: 1.7; }
+
+  /* Top bar */
+  .topbar { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: rgba(250,247,242,.88); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .brand { font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: var(--accent); }
+  .brand em { font-style: italic; color: var(--gold); }
+  .streak { display: none; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px; background: #fff; box-shadow: var(--shadow); font-size: .78rem; font-weight: 700; color: var(--accent); }
+  .streak.visible { display: inline-flex; }
+
+  /* Tabs */
+  .tab { display: none; padding: 4px 20px 120px; }
+  .tab.active { display: block; animation: rise .4s cubic-bezier(.2,.8,.2,1); }
+  .eyebrow { font-size: .7rem; letter-spacing: .18em; color: var(--accent); font-weight: 700; text-transform: uppercase; }
+  .h1 { font-family: 'Noto Serif JP', serif; font-size: 1.5rem; font-weight: 600; line-height: 1.35; margin: 6px 0 4px; }
+  .lead { font-size: .85rem; color: var(--sub); }
+  .sec { font-size: .72rem; letter-spacing: .14em; color: var(--sub); font-weight: 700; margin: 26px 0 10px; text-transform: uppercase; }
+  .stack { display: flex; flex-direction: column; gap: 14px; margin-top: 18px; }
+
+  /* Hero (今日) */
+  .hero { position: relative; overflow: hidden; border-radius: 28px; padding: 24px; background: linear-gradient(150deg, #FFFFFF 0%, #FBEFE8 100%); box-shadow: var(--shadow); }
+  .hero::after { content: ''; position: absolute; right: -60px; top: -60px; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, rgba(217,162,107,.25), transparent 70%); }
+  .hero-row { display: flex; align-items: center; gap: 18px; position: relative; z-index: 1; }
+  .hero-info { flex: 1; min-width: 0; }
+  .hero-info .k { font-size: .78rem; color: var(--sub); }
+  .hero-info .v { font-family: 'Noto Serif JP', serif; font-size: 1.15rem; font-weight: 600; margin-top: 4px; }
+  .hero-info .meter { margin-top: 12px; }
+  .meter-top { display: flex; justify-content: space-between; font-size: .74rem; color: var(--sub); margin-bottom: 6px; }
+  .meter-bar { height: 7px; border-radius: 7px; background: rgba(184,103,74,.14); overflow: hidden; }
+  .meter-fill { height: 100%; width: 0; border-radius: 7px; background: linear-gradient(90deg, var(--accent-2), var(--accent)); transition: width 1s cubic-bezier(.2,.8,.2,1); }
+  .hero-empty { text-align: center; padding: 8px 0 4px; position: relative; z-index: 1; }
+  .hero-empty .ic { font-size: 2.8rem; margin-bottom: 8px; }
+  .hero-empty .t { font-family: 'Noto Serif JP', serif; font-weight: 600; font-size: 1.1rem; margin-bottom: 6px; }
+  .hero-empty .s { font-size: .82rem; color: var(--sub); margin-bottom: 18px; }
+  .hero-empty .btn { margin: 0 auto; }
+
+  /* Ring */
+  .ring { position: relative; flex-shrink: 0; }
+  .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring-bg { fill: none; stroke: rgba(184,103,74,.12); }
+  .ring-fg { fill: none; stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset 1.3s cubic-bezier(.2,.8,.2,1); }
+  .ring-num { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .ring-num b { font-family: 'DM Serif Display', serif; font-weight: 400; font-size: 2.1rem; line-height: 1; color: var(--ink); }
+  .ring-num span { font-size: .62rem; color: var(--sub); margin-top: 4px; letter-spacing: .06em; }
+
+  /* Checklist */
+  .check-group { background: var(--card); border-radius: var(--r-lg); padding: 6px 0; box-shadow: var(--shadow); }
+  .check-head { display: flex; align-items: center; gap: 8px; padding: 14px 18px 6px; font-weight: 700; font-size: .9rem; }
+  .check-item { display: flex; align-items: flex-start; gap: 14px; width: 100%; text-align: left; padding: 12px 18px; }
+  .check-item + .check-item { border-top: 1px solid var(--line); }
+  .box { width: 24px; height: 24px; flex-shrink: 0; border-radius: 8px; border: 2px solid #DCCFBF; display: flex; align-items: center; justify-content: center; transition: all .2s; margin-top: 1px; }
+  .box svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 3; fill: none; opacity: 0; transition: opacity .2s; }
+  .check-item.done .box { background: var(--moss); border-color: var(--moss); }
+  .check-item.done .box svg { opacity: 1; }
+  .check-item.done .ci-t { color: var(--sub); text-decoration: line-through; text-decoration-color: #CDBFAF; }
+  .ci-t { font-size: .9rem; font-weight: 500; line-height: 1.5; }
+  .ci-s { font-size: .74rem; color: var(--sub); margin-top: 2px; }
+  .tip { display: flex; gap: 12px; align-items: flex-start; padding: 16px 18px; border-radius: var(--r-md); background: var(--moss-soft); font-size: .84rem; line-height: 1.7; color: #3F4D31; }
+  .tip b { color: var(--moss); }
+
+  /* Cards */
+  .row-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .row-actions .btn { padding: 14px; font-size: .88rem; }
+
+  /* Check tab */
+  .photo { position: relative; height: 210px; border-radius: 26px; background: #fff; border: 1.5px dashed #D9C6B3; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--shadow); }
+  .photo-ph { text-align: center; color: var(--sub); font-size: .85rem; }
+  .photo-ph .cam { width: 64px; height: 64px; margin: 0 auto 10px; border-radius: 22px; background: var(--accent-soft); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; }
+  .photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .photo-tag { position: absolute; left: 12px; bottom: 12px; background: rgba(42,29,23,.7); color: #fff; font-size: .7rem; padding: 4px 10px; border-radius: 999px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .pick { padding: 12px 6px; border-radius: var(--r-md); background: #fff; border: 1.5px solid var(--line); font-size: .84rem; color: var(--sub); transition: all .2s; text-align: center; }
+  .pick.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+  .sym { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: var(--r-md); background: #fff; border: 1.5px solid var(--line); font-size: .88rem; text-align: left; transition: all .2s; }
+  .sym .e { font-size: 1.2rem; }
+  .sym small { display: block; font-size: .7rem; color: var(--sub); }
+  .sym.on { border-color: var(--accent); background: var(--accent-soft); }
+  .sym.on b { color: var(--accent); }
+
+  /* Result */
+  .result { margin-top: 26px; display: flex; flex-direction: column; gap: 14px; }
+  .res-top { display: flex; align-items: center; gap: 16px; }
+  .res-top .txt { flex: 1; }
+  .res-top .txt .k { font-weight: 700; font-size: .95rem; }
+  .res-top .txt .s { font-size: .78rem; color: var(--sub); margin-top: 4px; line-height: 1.6; }
+  .rad-wrap { max-width: 280px; margin: 6px auto 0; }
+  .rad-wrap svg, .rp-radar svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .rad-data { transform: scale(0); transition: transform 1s cubic-bezier(.2,.8,.2,1); }
+  .rad-data.in { transform: scale(1); }
+  .saved-note { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; border-radius: var(--r-md); background: var(--moss-soft); font-size: .82rem; color: #3F4D31; }
+  .saved-note a { color: var(--moss); font-weight: 700; text-decoration: none; white-space: nowrap; }
+  .unlock { border-radius: 24px; padding: 22px; background: linear-gradient(150deg, #1F1812, #33261B); color: #F1E3C8; position: relative; overflow: hidden; }
+  .unlock::before { content: ''; position: absolute; right: -40px; top: -40px; width: 160px; height: 160px; border-radius: 50%; background: radial-gradient(circle, rgba(230,198,133,.28), transparent 70%); }
+  .unlock .lk { font-size: .66rem; letter-spacing: .24em; color: #E6C685; font-weight: 700; }
+  .unlock h3 { font-family: 'Noto Serif JP', serif; font-size: 1.1rem; margin: 6px 0 6px; position: relative; }
+  .unlock p { font-size: .78rem; opacity: .8; line-height: 1.7; position: relative; }
+  .unlock .btn { margin-top: 14px; position: relative; background: linear-gradient(135deg, #E6C685, #B8935A); color: #241A10; box-shadow: 0 10px 24px rgba(184,147,90,.35); }
+  .unlock .alt { display: block; text-align: center; color: #E6C685; font-size: .78rem; margin-top: 12px; position: relative; text-decoration: underline; text-underline-offset: 3px; }
+  .disc { font-size: .7rem; color: var(--sub); line-height: 1.7; text-align: center; padding: 4px 8px 0; }
+
+  /* History */
+  .sum-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 18px; }
+  .sum { background: #fff; border-radius: var(--r-md); padding: 14px 10px; text-align: center; box-shadow: var(--shadow); }
+  .sum b { display: block; font-family: 'DM Serif Display', serif; font-weight: 400; font-size: 1.5rem; color: var(--ink); line-height: 1.1; }
+  .sum span { font-size: .68rem; color: var(--sub); }
+  .up { color: var(--moss); font-weight: 700; font-size: .72rem; }
+  .down { color: var(--danger); font-weight: 700; font-size: .72rem; }
+  .chart-card { padding: 16px 10px 10px; }
+  .chart { width: 100%; height: auto; display: block; }
+  .chart .grid { stroke: #EEE5D8; stroke-width: 1; }
+  .chart .axis { font-size: 10px; fill: var(--sub); font-family: 'DM Sans', system-ui, sans-serif; }
+  .chart .line { fill: none; stroke: var(--accent); stroke-width: 2.6; stroke-linejoin: round; stroke-linecap: round; }
+  .chart .dot { fill: #fff; stroke: var(--accent); stroke-width: 2.2; }
+  .lock-line { font-size: .76rem; color: var(--sub); text-align: center; margin-top: 10px; }
+  .lock-line b { color: var(--accent); }
+  .rec { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: #fff; border-radius: var(--r-md); box-shadow: var(--shadow); }
+  .rec-score { width: 52px; height: 52px; border-radius: 16px; background: var(--accent-soft); color: var(--accent); display: flex; align-items: center; justify-content: center; font-family: 'DM Serif Display', serif; font-size: 1.35rem; flex-shrink: 0; }
+  .rec-main { flex: 1; min-width: 0; }
+  .rec-date { font-size: .78rem; color: var(--sub); }
+  .rec-sym { font-size: .88rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Empty */
+  .empty { text-align: center; padding: 44px 22px; background: #fff; border-radius: var(--r-lg); box-shadow: var(--shadow); margin-top: 18px; }
+  .empty .ic { font-size: 2.6rem; margin-bottom: 10px; }
+  .empty .t { font-family: 'Noto Serif JP', serif; font-weight: 600; font-size: 1.05rem; margin-bottom: 6px; }
+  .empty .s { font-size: .82rem; color: var(--sub); line-height: 1.7; margin-bottom: 18px; }
+
+  /* Me */
+  .profile { display: flex; align-items: center; gap: 16px; }
+  .avatar { width: 58px; height: 58px; border-radius: 20px; background: linear-gradient(135deg, var(--accent-2), var(--accent)); color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'DM Serif Display', serif; font-size: 1.6rem; box-shadow: var(--shadow-btn); }
+  .profile .nm { font-family: 'Noto Serif JP', serif; font-weight: 600; font-size: 1.1rem; }
+  .plan-badge { display: inline-block; margin-top: 4px; font-size: .68rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--line); color: var(--sub); }
+  .plan-badge.pro { background: linear-gradient(135deg, #E6C685, #B8935A); color: #241A10; }
+  .pro-card { border-radius: 24px; padding: 22px; background: linear-gradient(150deg, #1F1812, #33261B); color: #F1E3C8; position: relative; overflow: hidden; }
+  .pro-card .lk { font-size: .66rem; letter-spacing: .24em; color: #E6C685; font-weight: 700; }
+  .pro-card h3 { font-family: 'Noto Serif JP', serif; font-size: 1.15rem; margin: 6px 0 12px; }
+  .pro-card ul { list-style: none; font-size: .84rem; line-height: 2; }
+  .pro-card li::before { content: '✓ '; color: #E6C685; font-weight: 700; }
+  .pro-card .btn { margin-top: 16px; background: linear-gradient(135deg, #E6C685, #B8935A); color: #241A10; }
+  .pro-card .price { font-size: .75rem; opacity: .75; margin-top: 8px; text-align: center; }
+  .set-list { background: #fff; border-radius: var(--r-lg); box-shadow: var(--shadow); overflow: hidden; }
+  .set-item { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 15px 18px; font-size: .9rem; text-align: left; }
+  .set-item + .set-item { border-top: 1px solid var(--line); }
+  .set-item .r { color: var(--sub); font-size: .82rem; }
+  .set-item.danger { color: var(--danger); }
+  .privacy { font-size: .76rem; color: var(--sub); line-height: 1.8; padding: 4px 4px 0; }
+
+  /* Tab bar */
+  .tabbar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; display: grid; grid-template-columns: repeat(4, 1fr); padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px)); background: rgba(255,255,255,.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--line); z-index: 40; }
+  .tabbar button { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; font-size: .66rem; color: #A89A8D; font-weight: 500; transition: color .2s; }
+  .tabbar svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform .25s; }
+  .tabbar button.active { color: var(--accent); font-weight: 700; }
+  .tabbar button.active svg { transform: translateY(-2px); }
+
+  /* Overlays shared */
+  .sheet-bg { position: fixed; inset: 0; z-index: 220; background: rgba(42,29,23,.45); display: none; align-items: flex-end; justify-content: center; }
+  .sheet-bg.open { display: flex; animation: fade .25s ease; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  .sheet { width: 100%; max-width: 480px; background: var(--bg); border-radius: 28px 28px 0 0; padding: 26px 22px calc(26px + env(safe-area-inset-bottom, 0px)); animation: up .35s cubic-bezier(.2,.8,.2,1); max-height: 90vh; overflow-y: auto; }
+  @keyframes up { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .sheet .grab { width: 40px; height: 4px; border-radius: 4px; background: #D8CBBB; margin: -10px auto 18px; }
+  .plans { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 18px 0 12px; }
+  .plan { padding: 16px 12px; border-radius: 18px; background: #fff; border: 1.5px solid var(--line); text-align: center; }
+  .plan.best { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(184,147,90,.15); }
+  .plan .n { font-size: .8rem; color: var(--sub); }
+  .plan .p { font-family: 'DM Serif Display', serif; font-size: 1.5rem; margin-top: 4px; }
+  .plan .p small { font-size: .7rem; font-family: 'Noto Sans JP'; color: var(--sub); }
+  .plan .b { display: inline-block; margin-top: 6px; font-size: .66rem; color: #8A6A2E; font-weight: 700; }
+  .sheet .btn-soft { margin-top: 8px; }
+
+  /* Ad */
+  #ad-overlay { position: fixed; inset: 0; z-index: 260; background: #0E0A08; color: #fff; display: none; flex-direction: column; }
+  #ad-overlay.open { display: flex; animation: fade .25s ease; }
+  .ad-top { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; font-size: .78rem; }
+  .ad-badge { background: rgba(255,255,255,.16); padding: 3px 8px; border-radius: 4px; font-size: .66rem; font-weight: 700; }
+  .ad-stage { position: relative; flex: 1; background: #000; min-height: 240px; }
+  #ad-video, #ad-slot { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .ad-note { font-size: .74rem; opacity: .75; text-align: center; padding: 14px 20px 26px; min-height: 1em; line-height: 1.6; }
+
+  /* Report */
+  #report-overlay { position: fixed; inset: 0; z-index: 210; background: #14110D; color: #EFE3CC; overflow-y: auto; display: none; }
+  #report-overlay.open { display: block; animation: fade .4s ease; }
+  .rp-wrap { max-width: 480px; margin: 0 auto; padding: 56px 24px 64px; position: relative; }
+  .rp-close { position: absolute; top: 18px; right: 18px; width: 36px; height: 36px; border-radius: 50%; background: rgba(230,198,133,.12); color: #E6C685; font-size: 1rem; }
+  .rp-label { font-size: .66rem; letter-spacing: .28em; color: #B89A6A; font-weight: 700; }
+  .rp-title { font-family: 'Noto Serif JP', serif; font-size: 1.6rem; font-weight: 600; margin-top: 6px; }
+  .rp-title em { font-style: normal; color: #E6C685; }
+  .rp-index { text-align: center; margin: 28px 0 14px; }
+  .rp-num { font-family: 'DM Serif Display', serif; font-size: 5.6rem; line-height: 1; background: linear-gradient(135deg, #F6E2B5, #B8935A); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .rp-idx-lbl { font-size: .78rem; letter-spacing: .14em; color: #B89A6A; margin-top: 8px; }
+  .rp-radar { max-width: 320px; margin: 0 auto 10px; }
+  .rp-bar { margin-bottom: 14px; }
+  .rp-bar-head { display: flex; justify-content: space-between; font-size: .8rem; margin-bottom: 6px; }
+  .rp-track { height: 8px; background: rgba(230,198,133,.14); border-radius: 8px; overflow: hidden; }
+  .rp-fill { height: 100%; width: 0; background: linear-gradient(90deg, #8E6B35, #E6C685); border-radius: 8px; transition: width 1.2s cubic-bezier(.2,.8,.2,1); }
+  .rp-sec { font-size: .68rem; letter-spacing: .2em; color: #B89A6A; font-weight: 700; text-transform: uppercase; margin: 30px 0 10px; }
+  .rp-steps { margin-left: 20px; font-size: .88rem; line-height: 2; }
+  .rp-ingr { border: 1px solid rgba(230,198,133,.22); border-radius: 16px; padding: 14px 16px; margin-bottom: 10px; background: rgba(230,198,133,.05); }
+  .rp-ingr b { display: block; color: #E6C685; font-size: .92rem; }
+  .rp-ingr span { font-size: .76rem; opacity: .8; }
+  .rp-note { font-size: .68rem; opacity: .55; margin-top: 24px; line-height: 1.7; }
+
+  #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 250; display: none; }
+  #toast { position: fixed; left: 50%; bottom: 100px; transform: translate(-50%, 16px); background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 14px; font-size: .82rem; opacity: 0; transition: all .3s; z-index: 280; max-width: 88%; text-align: center; pointer-events: none; box-shadow: 0 10px 30px rgba(0,0,0,.2); }
+  #toast.show { opacity: 1; transform: translate(-50%, 0); }
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="splash-logo">Hada<em>Log</em></div>
+  <div class="splash-tag">Skin · Daily · Plan</div>
+  <div class="splash-copy">撮って1分。今日の肌ケアと食事が決まる。</div>
+</div>
+
+<div id="app">
+
+  <!-- はじめて起動したときの説明（1回だけ） -->
+  <section id="onboarding" class="screen">
+    <div class="ob-top">
+      <div class="ob-brand">HadaLog</div>
+      <button class="ob-skip" id="ob-skip">スキップ</button>
+    </div>
+    <div class="ob-body" id="ob-body">
+      <div class="ob-slide active">
+        <div class="ob-illust i1">📸</div>
+        <div class="ob-title">撮って<em>選ぶだけ</em></div>
+        <div class="ob-sub">症状を選ぶか写真を撮るだけ。<br>今日のケアと食事のプランが1分で届きます。</div>
+      </div>
+      <div class="ob-slide">
+        <div class="ob-illust i2">🌿</div>
+        <div class="ob-title">外側と<em>内側</em>、<br>両方からケア</div>
+        <div class="ob-sub">スキンケアだけでなく、毎日の食事からも。<br>無理のない習慣を一緒に組み立てます。</div>
+      </div>
+      <div class="ob-slide">
+        <div class="ob-illust i3">📈</div>
+        <div class="ob-title">続けるほど<em>わかる</em></div>
+        <div class="ob-sub">記録がたまると、肌の推移と連続記録が見えてきます。</div>
+      </div>
+    </div>
+    <div class="ob-foot">
+      <div class="ob-dots"><span class="ob-dot active"></span><span class="ob-dot"></span><span class="ob-dot"></span></div>
+      <button class="btn btn-primary" id="ob-next">次へ</button>
+    </div>
+  </section>
+
+  <!-- 名前だけ（端末内に保存） -->
+  <section id="register" class="screen">
+    <div class="reg-logo">Hada<em>Log</em></div>
+    <div class="reg-tag">はじめに、呼び名を教えてください</div>
+    <div class="card">
+      <div class="field">
+        <label for="reg-name">呼び名（ニックネーム）</label>
+        <input id="reg-name" maxlength="12" placeholder="例：さくら" autocomplete="off">
+      </div>
+      <div class="form-err" id="reg-err"></div>
+      <button class="btn btn-primary" id="reg-submit">はじめる</button>
+      <p class="note">データはこの端末の中だけに保存されます。<br>写真は保存しません。</p>
+    </div>
+  </section>
+
+  <!-- メイン -->
+  <section id="main" class="screen">
+    <header class="topbar">
+      <div class="brand">Hada<em>Log</em></div>
+      <div class="streak" id="streak"></div>
+    </header>
+
+    <!-- 今日 -->
+    <div class="tab active" id="tab-today">
+      <div class="hero" id="hero"></div>
+      <div id="today-body"></div>
+    </div>
+
+    <!-- チェック -->
+    <div class="tab" id="tab-check">
+      <div style="margin-top:12px">
+        <div class="eyebrow">Check</div>
+        <div class="h1">肌を<em style="font-style:normal;color:var(--accent)">チェック</em></div>
+        <div class="lead">写真がなくても、症状を選ぶだけで大丈夫です。</div>
+      </div>
+
+      <div class="stack" style="margin-top:20px">
+        <div class="photo" id="photo-box">
+          <input type="file" id="photo-input" accept="image/*" capture="user" hidden>
+          <div class="photo-ph" id="photo-ph"><div class="cam">📸</div>タップして撮影 / 選択<br><span style="font-size:.72rem">写真は保存されません</span></div>
+          <img id="photo-prev" alt="" hidden>
+          <span class="photo-tag" id="photo-tag" hidden>写真を選択中</span>
+        </div>
+        <button class="link" id="no-photo" style="align-self:center;margin-top:0">今日は写真なしでチェックする</button>
+      </div>
+
+      <div class="sec">気になる部分</div>
+      <div class="grid-3" id="region-grid"></div>
+
+      <div class="sec">気になる症状（複数OK）</div>
+      <div class="grid-2" id="sym-grid"></div>
+
+      <div style="margin-top:22px"><button class="btn btn-primary" id="diagnose">✦ 診断する</button></div>
+      <div id="result"></div>
+    </div>
+
+    <!-- 履歴 -->
+    <div class="tab" id="tab-history">
+      <div style="margin-top:12px">
+        <div class="eyebrow">History</div>
+        <div class="h1">肌の<em style="font-style:normal;color:var(--accent)">推移</em></div>
+        <div class="lead">記録した肌の変化を、ひと目で。</div>
+      </div>
+      <div id="history-body"></div>
+    </div>
+
+    <!-- マイページ -->
+    <div class="tab" id="tab-me">
+      <div style="margin-top:12px">
+        <div class="eyebrow">My page</div>
+        <div class="h1">マイページ</div>
+      </div>
+      <div id="me-body"></div>
+    </div>
+
+    <nav class="tabbar">
+      <button data-tab="today" class="active"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v8a2 2 0 0 1-2 2h-4v-6H9v6H5a2 2 0 0 1-2-2z"/></svg>今日</button>
+      <button data-tab="check"><svg viewBox="0 0 24 24"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3.5"/></svg>チェック</button>
+      <button data-tab="history"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>履歴</button>
+      <button data-tab="me"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>マイページ</button>
+    </nav>
+  </section>
+</div>
+
+<!-- 広告（Google IMA） -->
+<div id="ad-overlay"></div>
+<!-- 詳細分析レポート -->
+<div id="report-overlay"></div>
+<!-- プレミアム案内 -->
+<div class="sheet-bg" id="paywall"><div class="sheet" id="paywall-sheet"></div></div>
+<canvas id="confetti"></canvas>
+<div id="toast"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ───── データ ───── */
+  const KEY = 'hadalog_v3';
+  const DEF = { onb: false, user: null, records: [], analysisCount: 0, unlocked: {}, lastResult: null, checks: {}, premium: false };
+  let db;
+  try { db = Object.assign(structuredClone(DEF), JSON.parse(localStorage.getItem(KEY) || '{}')); }
+  catch (e) { db = structuredClone(DEF); }
+  const persist = () => localStorage.setItem(KEY, JSON.stringify(db));
+  const isPremium = () => !!db.premium;
+  const DEV = new URLSearchParams(location.search).has('dev'); // 開発用：?dev=1 のときだけ課金の代替スイッチを表示
+
+  const $ = id => document.getElementById(id);
+  const pad = n => String(n).padStart(2, '0');
+  const fmt = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const todayStr = () => fmt(new Date());
+  const dayIdx = () => Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 86400000);
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const hash = s => { let h = 7; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  /* ───── マスターデータ ───── */
+  const SYMS = [
+    { k: '乾燥', icon: '💧', d: 'つっぱる・粉っぽい' }, { k: 'ニキビ', icon: '🔴', d: 'ぽつぽつ・炎症' },
+    { k: '毛穴', icon: '⚪', d: '開きが気になる' }, { k: 'くすみ', icon: '🌫️', d: 'どんより・暗い' },
+    { k: '赤み', icon: '🌸', d: 'ほてり・赤いところ' }, { k: '色ムラ', icon: '🎨', d: 'シミ・ムラが目立つ' }
+  ];
+  const REGIONS = ['顔全体', 'おでこ', '目元', '頬', '口元', '首'];
+  const METRICS = ['うるおい', 'ハリ', '透明感', '毛穴', '赤み'];
+  const PEN = {
+    乾燥: { うるおい: 22, ハリ: 8 }, ニキビ: { 赤み: 18, 毛穴: 8 }, 毛穴: { 毛穴: 22, 透明感: 6 },
+    くすみ: { 透明感: 22, ハリ: 6 }, 赤み: { 赤み: 24 }, 色ムラ: { 透明感: 16, ハリ: 4 }
+  };
+  const INGR = {
+    うるおい: { name: 'セラミド・ヒアルロン酸', desc: '水分を抱えて逃がさない成分' },
+    ハリ: { name: 'ナイアシンアミド・ペプチド', desc: 'ハリを支える土台をサポート' },
+    透明感: { name: 'ビタミンC誘導体・アルブチン', desc: 'くすみ・色ムラのケアに' },
+    毛穴: { name: 'サリチル酸・ナイアシンアミド', desc: '毛穴まわりの皮脂ケアに' },
+    赤み: { name: 'グリチルリチン酸2K・シカ成分', desc: '赤みを落ち着かせる鎮静系' }
+  };
+  const CARE = {
+    morning: [
+      ['やさしい洗顔（ぬるま湯で30秒）', '化粧水を重ねづけ', '日焼け止め SPF30以上'],
+      ['ぬるま湯で洗顔', 'ビタミンC美容液', '保湿クリーム→日焼け止め'],
+      ['泡でやさしく洗う', 'ヒアルロン酸化粧水', '軽めの乳液＋日焼け止め']
+    ],
+    evening: [
+      ['クレンジング（こすらない）', '洗顔・化粧水', '保湿クリームでフタ'],
+      ['やさしく洗顔', '美容液（セラミド系）', 'ナイトクリーム'],
+      ['蒸しタオルでなじませる', '化粧水→乳液', 'シートマスク（週2回）']
+    ]
+  };
+  const FOOD = [
+    { t: '鮭とブロッコリーのグリル', n: 'オメガ3とビタミンCで内側から' },
+    { t: '納豆ごはんと味噌汁', n: '発酵食品で腸内環境を整える' },
+    { t: 'ヨーグルトとキウイ', n: '腸内環境とビタミンCを一緒に' },
+    { t: '豆腐と野菜の鍋', n: 'たんぱく質でコラーゲン生成をサポート' },
+    { t: 'ナッツとパプリカのサラダ', n: 'ビタミンEで抗酸化' },
+    { t: '卵とほうれん草のソテー', n: 'ビタミン群と鉄分を補う' }
+  ];
+  const TIPS = {
+    乾燥: '乾燥は水分が逃げるサイン。保湿は重ねづけで。',
+    ニキビ: '洗いすぎ・触りすぎは逆効果。皮脂と摩擦を減らして。',
+    毛穴: '毛穴は皮脂と乾燥の両方で目立ちます。',
+    くすみ: 'くすみは乾燥と紫外線の影響が大きめ。日焼け止めを忘れずに。',
+    赤み: '赤みは刺激を避けるのが最優先。熱いお湯は控えめに。',
+    色ムラ: '色ムラは紫外線対策が一番の近道です。'
+  };
+  const SPECIAL = {
+    3: '🔥 3日連続！この調子でいきましょう',
+    7: '🎉 7日連続達成！肌は習慣で変わります',
+    14: '✨ 14日連続！立派な積み重ねです',
+    30: '👑 30日連続！あなたの肌はもう変わり始めています'
+  };
+  const FREE_HISTORY_LIMIT = 7;
+
+  /* ───── ロジック ───── */
+  function analyze(symptoms, region) {
+    const date = todayStr();
+    const seed = hash(date + symptoms.join() + region);
+    const m = {};
+    METRICS.forEach(k => m[k] = 78);
+    symptoms.forEach(s => Object.entries(PEN[s] || {}).forEach(([k, v]) => m[k] -= v));
+    METRICS.forEach((k, i) => { m[k] = clamp(Math.round(m[k] + ((seed >> (i * 3)) % 7) - 3), 30, 98); });
+    const score = Math.round(METRICS.reduce((a, k) => a + m[k], 0) / METRICS.length);
+    return { id: Date.now(), ts: Date.now(), date, score, metrics: m, symptoms, region, saved: false };
+  }
+
+  function planFor(r) {
+    const d = dayIdx();
+    const pick = (arr, off = 0) => arr[(d + off) % arr.length];
+    return {
+      morning: pick(CARE.morning),
+      evening: pick(CARE.evening),
+      foods: [pick(FOOD, 0), pick(FOOD, 1)],
+      tip: TIPS[r.symptoms[0]] || '今日は基本のケアをていねいに。'
+    };
+  }
+
+  function streak() {
+    const days = new Set(db.records.map(r => r.date));
+    const d = new Date();
+    if (!days.has(fmt(d))) { d.setDate(d.getDate() - 1); if (!days.has(fmt(d))) return 0; }
+    let n = 0;
+    while (days.has(fmt(d))) { n++; d.setDate(d.getDate() - 1); }
+    return n;
+  }
+  function bestStreak() {
+    const days = [...new Set(db.records.map(r => r.date))].sort();
+    let best = 0, cur = 0, prev = null;
+    days.forEach(s => {
+      const d = new Date(s + 'T00:00:00');
+      cur = (prev && (d - prev) === 86400000) ? cur + 1 : 1;
+      best = Math.max(best, cur);
+      prev = d;
+    });
+    return best;
+  }
+  // 今から from〜to 日前までの記録の平均（null = 記録なし）
+  function avgBetween(from, to) {
+    const now = Date.now();
+    const rs = db.records.filter(r => { const d = (now - r.ts) / 86400000; return d >= from && d < to; });
+    return rs.length ? Math.round(rs.reduce((a, r) => a + r.score, 0) / rs.length) : null;
+  }
+  function greet() {
+    const h = new Date().getHours();
+    if (h >= 5 && h < 11) return 'おはようございます ☀️';
+    if (h >= 18 || h < 4) return 'おつかれさまです 🌙';
+    return 'こんにちは 🌿';
+  }
+  const todayLabel = () => new Date().toLocaleDateString('ja-JP', { month: 'long', day: 'numeric', weekday: 'short' });
+
+  /* ───── 部品（SVG） ───── */
+  function ring(score, size = 132, stroke = 12, label = '肌指数') {
+    const r = (size - stroke) / 2, circ = 2 * Math.PI * r, off = circ * (1 - score / 100);
+    return `<div class="ring" style="width:${size}px;height:${size}px">
+      <svg viewBox="0 0 ${size} ${size}">
+        <circle cx="${size / 2}" cy="${size / 2}" r="${r}" class="ring-bg" stroke-width="${stroke}"/>
+        <circle cx="${size / 2}" cy="${size / 2}" r="${r}" class="ring-fg" stroke-width="${stroke}"
+          stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${circ.toFixed(1)}" data-off="${off.toFixed(1)}"/>
+      </svg>
+      <div class="ring-num"><b>${score}</b><span>${label}</span></div>
+    </div>`;
+  }
+
+  const LABEL_POS = [-90, -18, 54, 126, 198];
+  function radarSVG(m, dark = false) {
+    const c = 140, R = 92;
+    const ang = i => -Math.PI / 2 + i * 2 * Math.PI / 5;
+    const pt = (i, v, rad = R) => [c + rad * v / 100 * Math.cos(ang(i)), c + rad * v / 100 * Math.sin(ang(i))];
+    const poly = vals => vals.map((v, i) => pt(i, v).map(n => n.toFixed(1)).join(',')).join(' ');
+    const lineC = dark ? 'rgba(230,198,133,.22)' : '#EEE5D8';
+    const fg = dark ? '#EFE3CC' : '#2A1D17';
+    const accent = dark ? '#E6C685' : '#B8674A';
+    const grid = [25, 50, 75, 100].map(l =>
+      `<polygon points="${poly(Array(5).fill(l))}" fill="none" stroke="${lineC}" stroke-width="1"/>`).join('');
+    const axes = METRICS.map((_, i) => {
+      const [x, y] = pt(i, 100);
+      return `<line x1="${c}" y1="${c}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="${lineC}" stroke-width="1"/>`;
+    }).join('');
+    const labels = METRICS.map((k, i) => {
+      const [x, y] = pt(i, 100, 124);
+      return `<text x="${x.toFixed(1)}" y="${(y - 4).toFixed(1)}" text-anchor="middle" font-size="12" fill="${fg}">${k}</text>
+        <text x="${x.toFixed(1)}" y="${(y + 14).toFixed(1)}" text-anchor="middle" font-size="14" font-weight="700" fill="${accent}">${m[k]}</text>`;
+    }).join('');
+    const vals = METRICS.map(k => m[k]);
+    const dots = vals.map((v, i) => { const [x, y] = pt(i, v); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="${accent}"/>`; }).join('');
+    return `<svg viewBox="0 0 280 280" role="img" aria-label="肌の5項目レーダーチャート">
+      ${grid}${axes}
+      <g class="rad-data" style="transform-origin:${c}px ${c}px">
+        <polygon points="${poly(vals)}" fill="${dark ? 'rgba(230,198,133,.26)' : 'rgba(184,103,74,.22)'}" stroke="${accent}" stroke-width="2.5" stroke-linejoin="round"/>
+        ${dots}
+      </g>
+      ${labels}
+    </svg>`;
+  }
+
+  function lineChart(recs) {
+    const W = 340, H = 180, P = { l: 30, r: 12, t: 14, b: 26 };
+    const n = recs.length;
+    const x = i => n === 1 ? (P.l + W - P.r) / 2 : P.l + i * (W - P.l - P.r) / (n - 1);
+    const y = v => P.t + (100 - v) / 100 * (H - P.t - P.b);
+    const grid = [0, 50, 100].map(v =>
+      `<line class="grid" x1="${P.l}" x2="${W - P.r}" y1="${y(v)}" y2="${y(v)}"/><text class="axis" x="${P.l - 6}" y="${y(v) + 4}" text-anchor="end">${v}</text>`).join('');
+    const pts = recs.map((r, i) => [x(i), y(r.score)]);
+    const d = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+    const base = (H - P.b).toFixed(1);
+    const area = `${d} L${pts[n - 1][0].toFixed(1)} ${base} L${pts[0][0].toFixed(1)} ${base} Z`;
+    const dots = pts.map(p => `<circle class="dot" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="4"/>`).join('');
+    const labels = recs.map((r, i) => (n <= 7 || i === 0 || i === n - 1)
+      ? `<text class="axis" x="${x(i).toFixed(1)}" y="${H - 6}" text-anchor="middle">${r.date.slice(5).replace('-', '/')}</text>` : '').join('');
+    return `<svg viewBox="0 0 ${W} ${H}" class="chart">
+      <defs><linearGradient id="ga" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#B8674A" stop-opacity=".25"/><stop offset="1" stop-color="#B8674A" stop-opacity="0"/></linearGradient></defs>
+      ${grid}<path d="${area}" fill="url(#ga)"/><path class="line" d="${d}"/>${dots}${labels}
+    </svg>`;
+  }
+
+  // 数字・図形のアニメーション（表示された後に動かす）
+  function animateIn(root) {
+    requestAnimationFrame(() => {
+      root.querySelectorAll('.rad-data').forEach(el => el.classList.add('in'));
+      root.querySelectorAll('.ring-fg').forEach(el => { el.style.strokeDashoffset = el.dataset.off; });
+      root.querySelectorAll('.meter-fill').forEach(el => { el.style.width = el.dataset.w + '%'; });
+    });
+  }
+
+  /* ───── 共通UI ───── */
+  function toast(msg) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => t.classList.remove('show'), 2400);
+  }
+  function show(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    $(id).classList.add('active');
+  }
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.id === 'tab-' + name));
+    document.querySelectorAll('.tabbar button').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+    window.scrollTo({ top: 0 });
+    if (name === 'today') renderToday();
+    if (name === 'history') renderHistory();
+    if (name === 'me') renderMe();
+    if (name === 'check') renderResult();
+  }
+  function emptyState(icon, title, text, btnLabel, go) {
+    return `<div class="empty"><div class="ic">${icon}</div><div class="t">${title}</div>
+      <div class="s">${text}</div>
+      <button class="btn btn-primary" data-go="${go}">${btnLabel}</button></div>`;
+  }
+  function updateHeader() {
+    const s = streak();
+    const chip = $('streak');
+    chip.textContent = `🔥 ${s}日連続`;
+    chip.classList.toggle('visible', s > 0);
+  }
+  function refreshAll() {
+    updateHeader();
+    renderToday();
+    renderResult();
+  }
+
+  /* ───── 今日タブ ───── */
+  function checkDone(key) { const c = db.checks[todayStr()] || {}; return !!c[key]; }
+  function checkItem(key, text, sub) {
+    const done = checkDone(key);
+    return `<button class="check-item ${done ? 'done' : ''}" data-check="${key}">
+      <span class="box"><svg viewBox="0 0 16 16"><path d="M3 8.5l3 3 7-7"/></svg></span>
+      <span><span class="ci-t" style="display:block">${esc(text)}</span>${sub ? `<span class="ci-s" style="display:block">${esc(sub)}</span>` : ''}</span>
+    </button>`;
+  }
+  function planCard(r) {
+    const p = planFor(r);
+    const keys = [];
+    p.morning.forEach((t, i) => keys.push(['am' + i, t]));
+    p.evening.forEach((t, i) => keys.push(['pm' + i, t]));
+    p.foods.forEach((f, i) => keys.push(['food' + i, f.t]));
+    const doneCount = keys.filter(([k]) => checkDone(k)).length;
+    return `
+      <div class="sec" style="display:flex;justify-content:space-between;align-items:center;margin-top:24px">
+        <span>今日のチェックリスト</span><span style="letter-spacing:0;color:var(--moss)">${doneCount} / ${keys.length} 完了</span>
+      </div>
+      <div class="check-group">
+        <div class="check-head">☀️ 朝のケア</div>
+        ${p.morning.map((t, i) => checkItem('am' + i, t)).join('')}
+      </div>
+      <div class="check-group" style="margin-top:12px">
+        <div class="check-head">🌙 夜のケア</div>
+        ${p.evening.map((t, i) => checkItem('pm' + i, t)).join('')}
+      </div>
+      <div class="check-group" style="margin-top:12px">
+        <div class="check-head">🥗 今日の食事</div>
+        ${p.foods.map((f, i) => checkItem('food' + i, f.t, f.n)).join('')}
+      </div>
+      <div class="tip" style="margin-top:12px"><span>💡</span><span><b>今日のひとこと：</b>${p.tip}</span></div>`;
+  }
+
+  function renderToday() {
+    const r = db.lastResult;
+    const hero = $('hero');
+    const body = $('today-body');
+    const name = db.user ? esc(db.user.name) + 'さん' : '';
+    if (!r || r.date !== todayStr()) {
+      hero.innerHTML = `<div class="hero-empty">
+        <div class="ic">🌱</div>
+        <div class="t">今日のプランはまだです</div>
+        <div class="s">肌を選ぶだけで、今日のケアと食事が1分で決まります。</div>
+        <button class="btn btn-primary" data-go="check" style="max-width:260px">✦ 今日のプランを作る</button></div>`;
+      body.innerHTML = '';
+      return;
+    }
+    const p = planFor(r);
+    const total = p.morning.length + p.evening.length + p.foods.length;
+    const doneCount = [...p.morning.map((_, i) => 'am' + i), ...p.evening.map((_, i) => 'pm' + i), ...p.foods.map((_, i) => 'food' + i)].filter(checkDone).length;
+    const pct = Math.round(doneCount / total * 100);
+    hero.innerHTML = `<div class="hero-row">
+        ${ring(r.score, 118, 11)}
+        <div class="hero-info">
+          <div class="k">${greet()}</div>
+          <div class="v">${name}</div>
+          <div class="meter">
+            <div class="meter-top"><span>今日の進み</span><span>${pct}%</span></div>
+            <div class="meter-bar"><div class="meter-fill" data-w="${pct}"></div></div>
+          </div>
+        </div>
+      </div>`;
+    body.innerHTML = `
+      ${planCard(r)}
+      <div class="row-actions" style="margin-top:16px">
+        <button class="btn btn-ghost" id="today-share">📤 シェア</button>
+        <button class="btn btn-soft" data-go="history">肌の推移を見る</button>
+      </div>`;
+    $('today-share').onclick = shareToday;
+    animateIn(hero);
+  }
+
+  /* ───── チェックタブ ───── */
+  let selSym = new Set();
+  let selRegion = '顔全体';
+  let usedPhoto = false;
+
+  function renderChecks() {
+    $('region-grid').innerHTML = REGIONS.map(r => `<button class="pick ${r === selRegion ? 'on' : ''}" data-region="${r}" aria-pressed="${r === selRegion}">${r}</button>`).join('');
+    $('sym-grid').innerHTML = SYMS.map(s => `<button class="sym ${selSym.has(s.k) ? 'on' : ''}" data-sym="${s.k}" aria-pressed="${selSym.has(s.k)}">
+      <span class="e">${s.icon}</span><span><b>${s.k}</b><small>${s.d}</small></span></button>`).join('');
+  }
+
+  function renderResult() {
+    const box = $('result');
+    const r = db.lastResult;
+    if (!r || r.date !== todayStr()) { box.innerHTML = ''; return; }
+    const unlocked = isPremium() || !!db.unlocked[r.id];
+    box.innerHTML = `
+      <div class="result">
+        <div class="card">
+          <div class="res-top">
+            ${ring(r.score, 104, 10)}
+            <div class="txt">
+              <div class="k">今日の肌チェック結果</div>
+              <div class="s">${r.symptoms.length ? esc(r.symptoms.join('・')) + 'が気になる' : '特に気になる症状なし'}<br>部位：${esc(r.region)}</div>
+            </div>
+          </div>
+          <div class="rad-wrap">${radarSVG(r.metrics)}</div>
+        </div>
+
+        ${r.saved
+          ? `<div class="saved-note"><span>✓ 記録に保存しました</span><a href="#" data-go="history">→ 履歴で肌の推移を見る</a></div>`
+          : ''}
+
+        <div class="row-actions">
+          <button class="btn btn-dark" id="btn-save" ${r.saved ? 'disabled' : ''}>${r.saved ? '✓ 保存済み' : '記録を保存'}</button>
+          <button class="btn btn-ghost" id="btn-share">📤 シェア</button>
+        </div>
+
+        ${planCard(r)}
+
+        ${unlocked
+          ? `<button class="btn btn-primary" id="btn-report">📊 詳細分析レポートを見る</button>`
+          : `<div class="unlock">
+               <div class="lk">DETAILED REPORT</div>
+               <h3>詳細分析レポート</h3>
+               <p>肌指数の内訳・朝夜のルーティン・あなたに合う成分ガイド。</p>
+               <button class="btn" id="btn-unlock">動画を見て解放する</button>
+               <button class="alt" id="btn-pro">広告なし・すべて解放（プレミアム）</button>
+             </div>`}
+
+        <p class="disc">※ 症状に基づく一般的な目安で、医療的な診断ではありません。続く場合は皮膚科へご相談ください。</p>
+      </div>`;
+
+    if (!r.saved) $('btn-save').onclick = saveResult;
+    $('btn-share').onclick = shareToday;
+    if ($('btn-report')) $('btn-report').onclick = () => openReport(r);
+    if ($('btn-unlock')) $('btn-unlock').onclick = () => playAd({
+      rewarded: true,
+      onDone: granted => {
+        if (!granted) return;
+        db.unlocked[r.id] = true; persist(); renderResult(); openReport(r);
+      }
+    });
+    if ($('btn-pro')) $('btn-pro').onclick = openPaywall;
+    animateIn(box);
+  }
+
+  function runDiagnose() {
+    const r = analyze([...selSym], selRegion);
+    const isFirst = db.analysisCount === 0;
+    db.analysisCount++;
+    if (isFirst) db.unlocked[r.id] = true; // 初回は詳細分析も無料
+    db.lastResult = r;
+    persist();
+    const finish = () => { refreshAll(); $('result').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+    // 初回とプレミアム会員は広告なし
+    if (isFirst || isPremium()) finish();
+    else playAd({ rewarded: false, onDone: finish });
+  }
+
+  function saveResult() {
+    const r = db.lastResult;
+    if (!r || r.saved) return;
+    const firstToday = !db.records.some(x => x.date === todayStr());
+    db.records.push({ date: r.date, ts: r.ts, score: r.score, metrics: r.metrics, symptoms: r.symptoms, region: r.region });
+    r.saved = true;
+    persist();
+    if (firstToday) confetti();
+    const s = streak();
+    if (SPECIAL[s]) { setTimeout(() => toast(SPECIAL[s]), 300); if (!firstToday) confetti(); }
+    else toast('保存しました ✓');
+    refreshAll();
+  }
+
+  function toggleCheck(key) {
+    const t = todayStr();
+    db.checks[t] = db.checks[t] || {};
+    db.checks[t][key] = !db.checks[t][key];
+    persist();
+    if (db.checks[t][key] && navigator.vibrate) navigator.vibrate(8); // 完了時の軽い振動（対応端末のみ）
+    renderToday();
+    if (db.lastResult && db.lastResult.date === t) renderResult();
+  }
+
+  /* ───── 広告（Google IMA） ───── */
+  // 本番では自分の広告ユニットのVASTタグURLに差し替えてください（下は Google の公式テスト用タグ）。
+  const AD_TAG = 'https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_ad_samples&sz=640x480&cust_params=sample_ct%3Dlinear&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&impl=s&correlator=';
+
+  let imaReady = null;
+  function loadIma() {
+    if (!imaReady) imaReady = new Promise((res, rej) => {
+      if (window.google && google.ima) return res();
+      const s = document.createElement('script');
+      s.src = 'https://imasdk.googleapis.com/js/sdkloader/ima3.js';
+      s.onload = res;
+      s.onerror = () => rej(new Error('IMA load failed'));
+      document.head.appendChild(s);
+    });
+    return imaReady;
+  }
+
+  let adDisplay = null, adLoader = null, adManager = null;
+  function cleanupAd() {
+    try { adManager && adManager.destroy(); } catch (e) {}
+    try { adLoader && adLoader.destroy(); } catch (e) {}
+    try { adDisplay && adDisplay.destroy(); } catch (e) {}
+    adManager = adLoader = adDisplay = null;
+  }
+
+  // rewarded: 最後まで再生（COMPLETE）した時だけ onDone(true)。途中でスキップすると解放されない。
+  // 通常: 再生・スキップ・広告なしのどれでも onDone() で先に進む。
+  function playAd({ rewarded, onDone }) {
+    const ov = $('ad-overlay');
+    ov.innerHTML = `
+      <div class="ad-top"><span class="ad-badge">広告</span><span id="ad-status">読み込み中…</span></div>
+      <div class="ad-stage"><video id="ad-video" playsinline></video><div id="ad-slot"></div></div>
+      <p class="ad-note">${rewarded ? '最後まで見ると詳細分析が解放されます' : 'プレミアム会員になると広告は表示されません'}</p>`;
+    ov.classList.add('open');
+
+    let finished = false, completed = false, failed = false;
+    // 広告が12秒以内に準備できなければ打ち切る（画面が固まらないように）
+    const guard = setTimeout(() => fail('ad request timeout'), 12000);
+    const end = () => {
+      if (finished) return;
+      finished = true;
+      clearTimeout(guard);
+      cleanupAd();
+      ov.classList.remove('open');
+      ov.innerHTML = '';
+      if (rewarded && !completed && !failed) toast('最後まで見ると詳細分析が解放されます');
+      onDone(completed);
+    };
+    const fail = why => {
+      console.warn('[ad]', why);
+      failed = true;
+      if (rewarded) toast('広告を読み込めませんでした。時間をおいてお試しください');
+      end();
+    };
+
+    if (!(window.google && google.ima)) return fail('IMA not loaded');
+
+    const video = $('ad-video'), slot = $('ad-slot'), stage = ov.querySelector('.ad-stage');
+    try {
+      // ユーザーのタップ直後に呼ぶ必要がある（loadIma は起動時に済ませておく）
+      adDisplay = new google.ima.AdDisplayContainer(slot, video);
+      adDisplay.initialize();
+      adLoader = new google.ima.AdsLoader(adDisplay);
+      adLoader.addEventListener(google.ima.AdsManagerLoadedEvent.Type.ADS_MANAGER_LOADED, e => {
+        adManager = e.getAdsManager(video);
+        adManager.addEventListener(google.ima.AdEvent.Type.LOADED, () => { clearTimeout(guard); $('ad-status').textContent = 'スポンサー'; });
+        adManager.addEventListener(google.ima.AdEvent.Type.COMPLETE, () => { completed = true; });
+        adManager.addEventListener(google.ima.AdEvent.Type.ALL_ADS_COMPLETED, end);
+        adManager.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, ev => fail(ev.getError().toString()));
+        adManager.init(stage.clientWidth, stage.clientHeight, google.ima.ViewMode.NORMAL);
+        adManager.start();
+      });
+      adLoader.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, ev => fail(ev.getError().toString()));
+      const req = new google.ima.AdsRequest();
+      req.adTagUrl = AD_TAG;
+      req.linearAdSlotWidth = stage.clientWidth;
+      req.linearAdSlotHeight = stage.clientHeight;
+      adLoader.requestAds(req);
+    } catch (err) {
+      fail(String(err));
+    }
+  }
+
+  /* ───── プレミアム案内（決済は未接続） ───── */
+  const PLANS = { month: { price: '480', label: '月額' }, year: { price: '3,800', label: '年額', best: true } };
+  function openPaywall() {
+    const sheet = $('paywall-sheet');
+    sheet.innerHTML = `
+      <div class="grab"></div>
+      <div class="eyebrow">Premium</div>
+      <div class="h1" style="margin-top:4px">広告なしで、<br>すべてのレポートを。</div>
+      <ul style="list-style:none;margin-top:14px;font-size:.88rem;line-height:2.1">
+        <li>✓ 広告なしで毎回の分析をすぐ確認</li>
+        <li>✓ 詳細分析レポートをいつでも解放</li>
+        <li>✓ 肌の推移を全期間で見られる</li>
+        <li>✓ 成分ガイドとルーティンの全内容</li>
+      </ul>
+      <div class="plans">
+        <button class="plan" data-plan="month"><div class="n">月額</div><div class="p">¥${PLANS.month.price}<small>/月</small></div></button>
+        <button class="plan best" data-plan="year"><div class="n">年額</div><div class="p">¥${PLANS.year.price}<small>/年</small></div><span class="b">おすすめ</span></button>
+      </div>
+      <p class="note" style="margin-top:6px">※ 決済はまだ接続されていません（準備中）。価格は予定です。</p>
+      ${DEV ? `<button class="btn btn-soft" id="dev-pro" style="margin-top:14px">開発用：プレミアムを有効にする</button>` : ''}
+      <button class="btn btn-ghost" id="pw-close" style="margin-top:12px">閉じる</button>`;
+    $('paywall').classList.add('open');
+    sheet.querySelectorAll('[data-plan]').forEach(b => b.onclick = () => toast('決済は準備中です。もう少しお待ちください'));
+    $('pw-close').onclick = closePaywall;
+    if ($('dev-pro')) $('dev-pro').onclick = () => { db.premium = true; persist(); closePaywall(); refreshAll(); renderMe(); toast('プレミアムを有効にしました（開発用）'); };
+  }
+  function closePaywall() { $('paywall').classList.remove('open'); }
+
+  /* ───── 詳細分析レポート ───── */
+  function openReport(r) {
+    const ov = $('report-overlay');
+    const low = [...METRICS].sort((a, b) => r.metrics[a] - r.metrics[b]).slice(0, 2);
+    const p = planFor(r);
+    ov.innerHTML = `<div class="rp-wrap">
+      <button class="rp-close" id="rp-close" aria-label="閉じる">✕</button>
+      <div class="rp-label">PREMIUM REPORT</div>
+      <div class="rp-title">詳細<em>分析</em>レポート</div>
+      <div class="rp-index">
+        <div class="rp-num" id="rp-num">0</div>
+        <div class="rp-idx-lbl">肌コンディション指数</div>
+      </div>
+      <div class="rp-radar">${radarSVG(r.metrics, true)}</div>
+      ${METRICS.map(k => `<div class="rp-bar">
+        <div class="rp-bar-head"><span>${k}</span><span>${r.metrics[k]}</span></div>
+        <div class="rp-track"><div class="rp-fill" data-w="${r.metrics[k]}"></div></div></div>`).join('')}
+      <div class="rp-sec">朝ルーティン</div>
+      <ol class="rp-steps">${p.morning.map(s => `<li>${esc(s)}</li>`).join('')}</ol>
+      <div class="rp-sec">夜ルーティン</div>
+      <ol class="rp-steps">${p.evening.map(s => `<li>${esc(s)}</li>`).join('')}</ol>
+      <div class="rp-sec">あなたに合うおすすめ成分ガイド</div>
+      ${low.map(k => `<div class="rp-ingr"><b>${INGR[k].name}</b><span>${k}が気になる方向け。${INGR[k].desc}。</span></div>`).join('')}
+      <p class="rp-note">成分は一般的な例です。効果や結果を保証するものではありません。</p>
+    </div>`;
+    ov.classList.add('open');
+    $('rp-close').onclick = () => { ov.classList.remove('open'); ov.innerHTML = ''; };
+    const numEl = $('rp-num'), target = r.score, t0 = performance.now();
+    (function tick(now) {
+      const k = Math.min(1, (now - t0) / 1100);
+      numEl.textContent = Math.round(target * (1 - Math.pow(1 - k, 3)));
+      if (k < 1) requestAnimationFrame(tick);
+    })(t0);
+    animateIn(ov);
+    ov.querySelectorAll('.rp-fill').forEach((el, i) => {
+      setTimeout(() => { el.style.width = el.dataset.w + '%'; }, 200 + i * 120);
+    });
+  }
+
+  /* ───── 紙吹雪 ───── */
+  function confetti() {
+    const cv = $('confetti');
+    const ctx = cv.getContext('2d');
+    cv.width = innerWidth; cv.height = innerHeight;
+    cv.style.display = 'block';
+    const cols = ['#B8674A', '#D9A26B', '#E6C685', '#5D6E4B', '#EEC9B5'];
+    const ps = Array.from({ length: 140 }, () => ({
+      x: Math.random() * cv.width, y: -20 - Math.random() * 200,
+      vx: (Math.random() - 0.5) * 3, vy: 2 + Math.random() * 3,
+      r: 4 + Math.random() * 5, rot: Math.random() * 6, vr: (Math.random() - 0.5) * 0.3,
+      c: cols[Math.floor(Math.random() * cols.length)]
+    }));
+    let f = 0;
+    (function loop() {
+      ctx.clearRect(0, 0, cv.width, cv.height);
+      ps.forEach(p => {
+        p.x += p.vx; p.y += p.vy; p.vy += 0.02; p.rot += p.vr;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+        ctx.fillStyle = p.c; ctx.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2);
+        ctx.restore();
+      });
+      if (++f < 180) requestAnimationFrame(loop);
+      else { ctx.clearRect(0, 0, cv.width, cv.height); cv.style.display = 'none'; }
+    })();
+  }
+
+  /* ───── シェア画像（1080×1350） ───── */
+  async function shareToday() {
+    const r = db.lastResult;
+    if (!r || r.date !== todayStr()) { toast('先に今日のプランを作ってください'); return; }
+    if (document.fonts) { try { await document.fonts.ready; } catch (e) {} }
+    const c = document.createElement('canvas');
+    c.width = 1080; c.height = 1350;
+    const x = c.getContext('2d');
+    const p = planFor(r);
+    const F = '"Noto Sans JP", "Yu Gothic", sans-serif';
+    const S = '"Noto Serif JP", "Yu Mincho", serif';
+    const g = x.createLinearGradient(0, 0, 0, 1350);
+    g.addColorStop(0, '#FBEFE8'); g.addColorStop(1, '#FAF7F2');
+    x.fillStyle = g; x.fillRect(0, 0, 1080, 1350);
+    x.fillStyle = '#B8674A'; x.font = `64px "DM Serif Display", ${S}`; x.fillText('HadaLog', 80, 130);
+    x.fillStyle = '#8B7D72'; x.font = `34px ${F}`; x.fillText(r.date.replace(/-/g, '.'), 80, 190);
+    // スコアのリング
+    const cx = 840, cy = 300, rad = 150, lw = 26;
+    x.lineWidth = lw; x.strokeStyle = 'rgba(184,103,74,.14)';
+    x.beginPath(); x.arc(cx, cy, rad, 0, Math.PI * 2); x.stroke();
+    x.strokeStyle = '#B8674A'; x.lineCap = 'round';
+    x.beginPath(); x.arc(cx, cy, rad, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * r.score / 100); x.stroke();
+    x.fillStyle = '#2A1D17'; x.font = `bold 96px "DM Serif Display", ${S}`; x.textAlign = 'center';
+    x.fillText(String(r.score), cx, cy + 30); x.textAlign = 'left';
+    x.fillStyle = '#8B7D72'; x.font = `26px ${F}`; x.textAlign = 'center'; x.fillText('肌指数', cx, cy + 74); x.textAlign = 'left';
+    x.fillStyle = '#2A1D17'; x.font = `600 40px ${S}`;
+    x.fillText(r.symptoms.length ? r.symptoms.join('・') + 'が気になる' : '特に気になる症状なし', 80, 420);
+    x.fillStyle = '#8B7D72'; x.font = `28px ${F}`; x.fillText('部位：' + r.region, 80, 468);
+    const block = (y, title, lines) => {
+      x.fillStyle = '#5D6E4B'; x.font = `bold 38px ${F}`; x.fillText(title, 80, y);
+      x.fillStyle = '#2A1D17'; x.font = `34px ${F}`;
+      lines.forEach((l, i) => x.fillText('・' + l, 80, y + 58 + i * 52));
+      return y + 58 + lines.length * 52 + 48;
+    };
+    let y = block(580, '☀️ 朝ケア', p.morning);
+    y = block(y, '🌙 夜ケア', p.evening);
+    block(y, '🥗 今日の食事', p.foods.map(f => f.t));
+    x.fillStyle = '#8B7D72'; x.font = `26px ${F}`;
+    x.fillText('※一般的な目安です。医療的な診断ではありません　#HadaLog', 80, 1270);
+
+    const blob = await new Promise(res => c.toBlob(res, 'image/png'));
+    const file = new File([blob], 'hadalog-today.png', { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: 'HadaLog', text: '今日の肌プラン #HadaLog' }); }
+      catch (e) { if (e.name !== 'AbortError') toast('シェアできませんでした'); }
+    } else {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'hadalog-today.png';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+      toast('画像を保存しました');
+    }
+  }
+
+  /* ───── 履歴 ───── */
+  function renderHistory() {
+    const box = $('history-body');
+    if (!db.records.length) {
+      box.innerHTML = emptyState('📈', 'まだ記録がありません', '今日の肌をチェックして、最初の1件を保存しましょう。', '✦ 今日のプランを作る', 'check');
+      return;
+    }
+    const recs = [...db.records].sort((a, b) => a.ts - b.ts);
+    const thisWeek = avgBetween(0, 7), lastWeek = avgBetween(7, 14);
+    const delta = thisWeek !== null && lastWeek !== null ? thisWeek - lastWeek : null;
+    const deltaHtml = delta === null ? '<span class="lead" style="font-size:.66rem">2週目から比較</span>'
+      : delta >= 0 ? `<span class="up">▲ ${delta}</span>` : `<span class="down">▼ ${Math.abs(delta)}</span>`;
+    const best = Math.max(...recs.map(r => r.score));
+    const shown = isPremium() ? recs : recs.slice(-FREE_HISTORY_LIMIT);
+    const hidden = recs.length - shown.length;
+    box.innerHTML = `
+      <div class="sum-row">
+        <div class="sum"><b>${recs[recs.length - 1].score}</b><span>最新</span></div>
+        <div class="sum"><b>${thisWeek ?? '—'}</b><span>今週平均</span><div style="margin-top:2px">${deltaHtml}</div></div>
+        <div class="sum"><b>${best}</b><span>自己ベスト</span></div>
+      </div>
+      <div class="sec">推移</div>
+      <div class="card chart-card">
+        ${lineChart(shown)}
+        ${hidden > 0 ? `<div class="lock-line">無料プランは直近${FREE_HISTORY_LIMIT}件まで。<b>プレミアムで全期間</b>を表示</div>` : ''}
+      </div>
+      ${!isPremium() ? `<button class="btn btn-soft" id="hist-pro" style="margin-top:12px">プレミアムで全期間を見る</button>` : ''}
+      <div class="sec">記録一覧</div>
+      <div class="stack" style="margin-top:0">
+        ${[...shown].reverse().map(r => `<div class="rec">
+            <div class="rec-score">${r.score}</div>
+            <div class="rec-main">
+              <div class="rec-date">${r.date}</div>
+              <div class="rec-sym">${r.symptoms.length ? esc(r.symptoms.join('・')) : '症状なし'}（${esc(r.region)}）</div>
+            </div></div>`).join('')}
+      </div>`;
+    if ($('hist-pro')) $('hist-pro').onclick = openPaywall;
+    animateIn(box);
+  }
+
+  /* ───── マイページ ───── */
+  function renderMe() {
+    const name = db.user ? esc(db.user.name) : 'ゲスト';
+    const pro = isPremium();
+    $('me-body').innerHTML = `
+      <div class="stack">
+        <div class="card profile">
+          <div class="avatar">${db.user ? esc(db.user.name.charAt(0)) : 'H'}</div>
+          <div style="flex:1">
+            <div class="nm">${name}さん</div>
+            <span class="plan-badge ${pro ? 'pro' : ''}">${pro ? 'プレミアム会員' : '無料プラン'}</span>
+          </div>
+        </div>
+
+        ${pro
+          ? `<div class="card" style="font-size:.86rem;line-height:1.8">プレミアムをご利用中です。広告なしで、すべての機能をお使いいただけます。</div>`
+          : `<div class="pro-card">
+              <div class="lk">PREMIUM</div>
+              <h3>広告なしで、<br>すべてのレポートを。</h3>
+              <ul><li>毎回の分析を広告なしで</li><li>詳細分析レポートを解放</li><li>肌の推移を全期間で</li></ul>
+              <button class="btn" id="me-pro">プレミアムを見る</button>
+              <div class="price">月額 ¥${PLANS.month.price}・年額 ¥${PLANS.year.price}（予定）</div>
+            </div>`}
+
+        <div class="grid-2">
+          <div class="sum"><b>${db.analysisCount}</b><span>分析回数</span></div>
+          <div class="sum"><b>${db.records.length}</b><span>記録数</span></div>
+          <div class="sum"><b>${streak()}</b><span>連続記録（日）</span></div>
+          <div class="sum"><b>${bestStreak()}</b><span>最長連続（日）</span></div>
+        </div>
+
+        <div class="sec" style="margin:8px 0 0">設定</div>
+        <div class="set-list">
+          <button class="set-item" id="me-name">呼び名<span class="r">${name} ›</span></button>
+          <button class="set-item" id="me-intro">はじめの説明を見る<span class="r">›</span></button>
+          <button class="set-item danger" id="me-delete">データをすべて削除<span class="r">›</span></button>
+        </div>
+
+        <div class="card privacy">
+          <b style="color:var(--ink)">プライバシーについて</b><br>
+          ・写真は保存しません（確認用の表示のみ）<br>
+          ・記録・設定はこの端末の中だけに保存されます<br>
+          ・広告は Google の広告配信（IMA）を利用します
+        </div>
+        <p class="disc">HadaLogの提案は症状に基づく一般的な目安で、医療的な診断ではありません。</p>
+      </div>`;
+    if ($('me-pro')) $('me-pro').onclick = openPaywall;
+    $('me-name').onclick = () => {
+      const v = prompt('呼び名を入力してください（12文字まで）', db.user ? db.user.name : '');
+      if (v && v.trim()) { db.user = { name: v.trim().slice(0, 12) }; persist(); refreshAll(); renderMe(); }
+    };
+    $('me-intro').onclick = () => { obGo(0); show('onboarding'); };
+    $('me-delete').onclick = () => {
+      if (!confirm('記録と設定をすべて削除します。この操作は取り消せません。よろしいですか？')) return;
+      localStorage.removeItem(KEY);
+      location.reload();
+    };
+    if (DEV) {
+      const b = document.createElement('button');
+      b.className = 'btn btn-soft'; b.style.marginTop = '12px'; b.textContent = db.premium ? '開発用：無料プランに戻す' : '開発用：プレミアムを有効にする';
+      b.onclick = () => { db.premium = !db.premium; persist(); renderMe(); refreshAll(); };
+      $('me-body').querySelector('.stack').appendChild(b);
+    }
+  }
+
+  /* ───── オンボーディング ───── */
+  let obIdx = 0;
+  function obGo(i) {
+    const slides = document.querySelectorAll('.ob-slide');
+    const dots = document.querySelectorAll('.ob-dot');
+    obIdx = clamp(i, 0, slides.length - 1);
+    slides.forEach((s, k) => s.classList.toggle('active', k === obIdx));
+    dots.forEach((d, k) => d.classList.toggle('active', k === obIdx));
+    $('ob-next').textContent = obIdx === slides.length - 1 ? 'はじめる' : '次へ';
+  }
+  function finishOnboarding() {
+    db.onb = true; persist();
+    route();
+  }
+
+  /* ───── 起動・ルーティング ───── */
+  function route() {
+    if (!db.onb) { obGo(0); show('onboarding'); return; }
+    if (!db.user) { show('register'); return; }
+    show('main');
+    refreshAll();
+    switchTab('today');
+  }
+
+  function bindEvents() {
+    $('ob-next').onclick = () => (obIdx < 2 ? obGo(obIdx + 1) : finishOnboarding());
+    $('ob-skip').onclick = finishOnboarding;
+    let sx = null;
+    $('ob-body').addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
+    $('ob-body').addEventListener('touchend', e => {
+      if (sx === null) return;
+      const dx = e.changedTouches[0].clientX - sx;
+      if (dx < -40) obGo(obIdx + 1);
+      else if (dx > 40) obGo(obIdx - 1);
+      sx = null;
+    });
+
+    $('reg-submit').onclick = () => {
+      const name = $('reg-name').value.trim();
+      if (!name) { $('reg-err').textContent = '呼び名を入力してください'; return; }
+      db.user = { name: name.slice(0, 12) };
+      persist();
+      route();
+    };
+    $('reg-name').addEventListener('keydown', e => { if (e.key === 'Enter') $('reg-submit').click(); });
+
+    document.querySelectorAll('.tabbar button').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
+
+    // data-go で画面移動 / data-check で今日のチェック
+    document.addEventListener('click', e => {
+      const go = e.target.closest('[data-go]');
+      if (go) { e.preventDefault(); switchTab(go.dataset.go); return; }
+      const ck = e.target.closest('[data-check]');
+      if (ck) toggleCheck(ck.dataset.check);
+    });
+
+    $('photo-box').onclick = e => { if (e.target.tagName !== 'INPUT') $('photo-input').click(); };
+    $('photo-input').onchange = e => {
+      const f = e.target.files[0];
+      if (!f) return;
+      usedPhoto = true;
+      const rd = new FileReader();
+      rd.onload = () => {
+        $('photo-prev').src = rd.result;
+        $('photo-prev').hidden = false;
+        $('photo-ph').hidden = true;
+        $('photo-tag').hidden = false;
+      };
+      rd.readAsDataURL(f);
+    };
+    $('no-photo').onclick = () => {
+      usedPhoto = false;
+      toast('写真なしでチェックします');
+      $('sym-grid').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+    $('region-grid').addEventListener('click', e => {
+      const b = e.target.closest('[data-region]');
+      if (!b) return;
+      selRegion = b.dataset.region;
+      renderChecks();
+    });
+    $('sym-grid').addEventListener('click', e => {
+      const b = e.target.closest('[data-sym]');
+      if (!b) return;
+      const k = b.dataset.sym;
+      selSym.has(k) ? selSym.delete(k) : selSym.add(k);
+      renderChecks();
+    });
+    $('diagnose').onclick = runDiagnose;
+    renderChecks();
+
+    $('paywall').addEventListener('click', e => { if (e.target.id === 'paywall') closePaywall(); });
+  }
+
+  function boot() {
+    bindEvents();
+    loadIma().catch(() => {});
+    setTimeout(() => {
+      $('splash').classList.add('hidden');
+      route();
+    }, 1600);
+  }
+  boot();
+})();
+</script>
+</body>
+</html>

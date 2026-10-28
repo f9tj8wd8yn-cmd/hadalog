@@ -1,0 +1,15 @@
+{
+  "name": "HadaLog",
+  "short_name": "HadaLog",
+  "description": "撮って1分。今日の肌ケアと食事が決まる。",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAF7F2",
+  "theme_color": "#FAF7F2",
+  "lang": "ja",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
